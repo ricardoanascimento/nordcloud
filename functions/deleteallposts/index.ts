@@ -6,9 +6,7 @@ const GHOST_URL = process.env["GHOST_URL"];
 const GHOST_ADMIN_KEY = process.env["GHOST_ADMIN_KEY"];
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-    context.log('HTTP trigger function processed a request.');
-    context.log(GHOST_URL);
-    context.log(GHOST_ADMIN_KEY);
+    context.log('HTTP trigger function has started.');
 
     const api = new GhostAdminAPI({
         url: GHOST_URL,
@@ -16,9 +14,11 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         key: GHOST_ADMIN_KEY
     });
 
-    const post = api.posts.browse({limit: 900, include: 'title,id'})
+    const post = api.posts.browse({ limit: 900, include: 'title,id' })
         .then((posts: any) => {
+            context.log('Successfuly retrieved all posts');
             posts.forEach((post: any) => {
+                context.log(`Atempt to delete ${post.title}`);
                 api.posts.delete({ id: post.id })
                     .then(() => {
                         context.log(`deleted: ${post.title}`)
@@ -29,6 +29,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
                         };
                     })
                     .catch((err: any) => {
+                        context.log(err);
                         context.res = {
                             status: 500,
                             body: err
@@ -37,11 +38,13 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
             });
         })
         .catch((err: any) => {
+            context.log(err);
             context.res = {
                 status: 500,
                 body: err
             };
         });
+    context.log('HTTP trigger function has finished.');
 };
 
 export default httpTrigger;
