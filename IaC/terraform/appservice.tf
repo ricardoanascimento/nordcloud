@@ -17,6 +17,16 @@ resource "azurerm_app_service" "prod" {
         headers = []
         ip_address = null
         virtual_network_subnet_id = null
+      },
+      {
+        service_tag               = "${var.allowed_service_tag_active}",
+        name                      = "AppServiceSameRegionOnly"
+        description               = "Allow AppService and Functions within the same region"
+        priority                  = 300
+        action                    = "Allow"
+        headers = []
+        ip_address = null
+        virtual_network_subnet_id = null
       }
     ]
   }
@@ -31,7 +41,6 @@ resource "azurerm_app_service" "prod" {
     WEBSITES_PORT                       = "2368"
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "true"
     NODE_ENV                            = "production"
-    # url                                 = "https://${var.env_prefix}.azurewebsites.net"
     url                                 = "https://ghost-FrontDoor.azurefd.net"
   }
 }
@@ -79,6 +88,16 @@ resource "azurerm_app_service" "prod_standby" {
         headers = []
         ip_address = null
         virtual_network_subnet_id = null
+      },
+      {
+        service_tag               = "${var.allowed_service_tag_standby}",
+        name                      = "AppServiceSameRegionOnly"
+        description               = "Allow AppService and Functions within the same region"
+        priority                  = 300
+        action                    = "Allow"
+        headers = []
+        ip_address = null
+        virtual_network_subnet_id = null
       }
     ]   
   }
@@ -93,7 +112,6 @@ resource "azurerm_app_service" "prod_standby" {
     WEBSITES_PORT                       = "2368"
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "true"
     NODE_ENV                            = "production"
-    # url                                 = "https://${var.env_prefix}-standby.azurewebsites.net"
     url                                 = "https://ghost-FrontDoor.azurefd.net"
   }
 }
