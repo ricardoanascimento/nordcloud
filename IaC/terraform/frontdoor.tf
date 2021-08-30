@@ -19,8 +19,10 @@ resource "azurerm_frontdoor" "prod" {
   }
 
   backend_pool_health_probe {
-    name            = "ghostHealthProbeSetting"
-    probe_method    = "HEAD"
+    name                = "ghostHealthProbeSetting"
+    enabled             = true
+    protocol            = "Https"
+    probe_method        = "HEAD"
     interval_in_seconds = "30"
   }
 

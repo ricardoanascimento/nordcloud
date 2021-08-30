@@ -6,7 +6,7 @@ resource "azurerm_app_service" "prod" {
 
   site_config {
     always_on          = true
-    linux_fx_version   = "DOCKER|ghost:4.12.1-alpine"
+    # linux_fx_version   = "DOCKER|ghost:latest"
     ip_restriction     = [
       {
         service_tag               = "AzureFrontDoor.Backend",
@@ -54,7 +54,7 @@ resource "azurerm_app_service_slot" "dev" {
 
   site_config {
     always_on          = true
-    linux_fx_version   = "DOCKER|ghost:4.12.1-alpine"  
+    # linux_fx_version   = "DOCKER|ghost:latest"  
   }
 
   app_settings = {
@@ -77,7 +77,7 @@ resource "azurerm_app_service" "prod_standby" {
 
   site_config {
     always_on          = true
-    linux_fx_version   = "DOCKER|ghost:4.12.1-alpine"
+    # linux_fx_version   = "DOCKER|ghost:latest"
     ip_restriction     = [
       {
         service_tag               = "AzureFrontDoor.Backend",
@@ -125,7 +125,7 @@ resource "azurerm_app_service_slot" "dev_standby" {
 
   site_config {
     always_on          = true
-    linux_fx_version   = "DOCKER|ghost:4.12.1-alpine"  
+    # linux_fx_version   = "DOCKER|ghost:latest"  
   }
 
   app_settings = {
