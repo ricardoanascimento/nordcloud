@@ -11,7 +11,7 @@ resource "azurerm_function_app" "prod" {
   app_settings = {
     WEBSITE_RUN_FROM_PACKAGE = ""
     FUNCTIONS_WORKER_RUNTIME = "node"
-    GHOST_URL = "https://${var.env_prefix}.azurewebsites.net"
+    GHOST_URL = "https://ghost-frontdoor.azurefd.net"
     GHOST_ADMIN_KEY = "Replace by integration admin key"
   }
 }
@@ -29,7 +29,7 @@ resource "azurerm_function_app" "dev" {
   app_settings = {
     WEBSITE_RUN_FROM_PACKAGE = ""
     FUNCTIONS_WORKER_RUNTIME = "node"
-    GHOST_URL = "https://${var.env_prefix}-dev.azurewebsites.net"
+    GHOST_URL = "https://ghost-frontdoor.azurefd.net"
     GHOST_ADMIN_KEY = "Replace by integration admin key"
   }
 }

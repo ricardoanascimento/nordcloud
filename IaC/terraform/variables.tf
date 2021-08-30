@@ -10,13 +10,3 @@ variable "mysql_administrator_login" {
 variable "mysql_administrator_login_password" {
   description = "Password of the host to access the database"
 }
-
-variable "allowed_service_tag_active" {
-  default = "AppService.WestEurope"
-  description = "Service tag that representes AppService.Region where the active region is located"
-}
-
-variable "allowed_service_tag_standby" {
-  default = "AppService.UKSouth"
-  description = "Service tag that representes AppService.Region where the standby region is located"
-}
