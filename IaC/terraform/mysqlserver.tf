@@ -1,5 +1,5 @@
 resource "azurerm_mysql_server" "prod" {
-  name                = "${var.env_prefix}-prod-mysqlserver"
+  name                = "${var.env_prefix}-prod"
   location            = azurerm_resource_group.active_rg.location
   resource_group_name = azurerm_resource_group.active_rg.name
 
@@ -19,8 +19,16 @@ resource "azurerm_mysql_server" "prod" {
   ssl_minimal_tls_version_enforced  = "TLS1_2"
 }
 
+resource "azurerm_mysql_firewall_rule" "prod" {
+  name                = "AllowAccessToAzureServices"
+  resource_group_name = azurerm_resource_group.active_rg.name
+  server_name         = azurerm_mysql_server.prod.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
+}
+
 resource "azurerm_mysql_server" "staging" {
-  name                = "${var.env_prefix}-staging-mysqlserver"
+  name                = "${var.env_prefix}-staging"
   location            = azurerm_resource_group.active_rg.location
   resource_group_name = azurerm_resource_group.active_rg.name
 
@@ -38,4 +46,12 @@ resource "azurerm_mysql_server" "staging" {
   public_network_access_enabled     = true
   ssl_enforcement_enabled           = true
   ssl_minimal_tls_version_enforced  = "TLS1_2"
+}
+
+resource "azurerm_mysql_firewall_rule" "staging" {
+  name                = "AllowAccessToAzureServices"
+  resource_group_name = azurerm_resource_group.active_rg.name
+  server_name         = azurerm_mysql_server.staging.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
 }

@@ -1,0 +1,56 @@
+name: 'container-deploy-active-rg'
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - functions/**
+    exclude:
+    - docs/README.md
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- task: Npm@1
+  inputs:
+    command: 'install'
+    workingDir: '$(System.DefaultWorkingDirectory)/functions'
+
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    workingDir: '$(System.DefaultWorkingDirectory)/functions'
+    customCommand: 'run build'
+
+- task: ArchiveFiles@2
+  displayName: 'Archive files'
+  inputs:
+    rootFolderOrFile: '$(System.DefaultWorkingDirectory)/functions'
+    includeRootFolder: false
+    archiveType: zip
+    archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+    replaceExistingArchive: true
+
+- upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+  artifact: drop
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: 'ls -li $(System.ArtifactsDirectory)'
+
+- task: AzureFunctionApp@1
+  inputs:
+    azureSubscription: 'AzSP001'
+    appType: 'functionAppLinux'
+    appName: 'ghostpoc-azure-functions-prod'
+    package: $(System.ArtifactsDirectory)/$(Build.BuildId).zip
+
+- task: AzureFunctionApp@1
+  inputs:
+    azureSubscription: 'AzSP001'
+    appType: 'functionAppLinux'
+    appName: 'ghostpoc-azure-functions-dev'
+    package: $(System.ArtifactsDirectory)/$(Build.BuildId).zip

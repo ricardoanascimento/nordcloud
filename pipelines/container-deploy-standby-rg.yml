@@ -1,0 +1,36 @@
+name: 'container-deploy-standby-rg'
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - dockerfile
+    exclude:
+    - docs/README.md
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'AcrStandby'
+    repository: 'mycustomghost'
+    command: 'buildAndPush'
+    Dockerfile: '**/dockerfile'
+    
+- task: AzureRmWebAppDeployment@4
+  displayName: 'Deploy Azure App Service'
+  inputs:
+    azureSubscription: AzSP001
+    appType: webAppContainer
+    WebAppName: 'ghostpoc-standby'
+    deployToSlotOrASE: true
+    ResourceGroupName: 'standby-rg'
+    SlotName: dev
+    DockerNamespace: ghostpocstandbycr.azurecr.io
+    DockerRepository: mycustomghost
+    DockerImageTag: $(Build.BuildId)
+    

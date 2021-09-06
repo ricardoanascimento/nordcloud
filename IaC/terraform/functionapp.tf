@@ -13,6 +13,10 @@ resource "azurerm_function_app" "prod" {
     FUNCTIONS_WORKER_RUNTIME = "node"
     GHOST_URL = "https://ghost-frontdoor.azurefd.net"
     GHOST_ADMIN_KEY = "Replace by integration admin key"
+    #Settings for application insights
+    APPINSIGHTS_INSTRUMENTATIONKEY              = "${azurerm_application_insights.ai_appservice_active.instrumentation_key}"
+    APPLICATIONINSIGHTS_CONNECTION_STRING       = "${azurerm_application_insights.ai_appservice_active.connection_string}"
+    ApplicationInsightsAgent_EXTENSION_VERSION  = "~2"
   }
 }
 

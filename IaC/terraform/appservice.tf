@@ -6,7 +6,6 @@ resource "azurerm_app_service" "prod" {
 
   site_config {
     always_on          = true
-    linux_fx_version   = "DOCKER|ghost:latest"
     ip_restriction     = [
       {
         service_tag               = "AzureFrontDoor.Backend",
@@ -32,6 +31,8 @@ resource "azurerm_app_service" "prod" {
   }
 
   app_settings = {
+    #Settings for ghost
+    database__client                    = "mysql"
     database__connection__host          = "${azurerm_mysql_server.prod.name}.mysql.database.azure.com"
     database__connection__port          = "3306"
     database__connection__user          = "${var.mysql_administrator_login}@${azurerm_mysql_server.prod.name}"
@@ -42,7 +43,36 @@ resource "azurerm_app_service" "prod" {
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "true"
     NODE_ENV                            = "production"
     url                                 = "https://ghost-FrontDoor.azurefd.net"
+    GHOST_CONTENT                       = "/var/lib/ghost/content_files/"
+    paths__contentPath	                = "/var/lib/ghost/content_files/"
+    privacy__useUpdateCheck	            = "false"
+    #Settings for private Container Registries
+    DOCKER_REGISTRY_SERVER_URL      = "https://${azurerm_container_registry.acr_active.login_server}"
+    DOCKER_REGISTRY_SERVER_USERNAME = "${azurerm_container_registry.acr_active.admin_username}"
+    DOCKER_REGISTRY_SERVER_PASSWORD = "${azurerm_container_registry.acr_active.admin_password}"
+    #Settings for application insights
+    APPINSIGHTS_INSTRUMENTATIONKEY              = "${azurerm_application_insights.ai_function_active.instrumentation_key}"
+    APPLICATIONINSIGHTS_CONNECTION_STRING       = "${azurerm_application_insights.ai_function_active.connection_string}"
+    ApplicationInsightsAgent_EXTENSION_VERSION  = "~2"
   }
+
+  storage_account {
+    name          = "ContentBlobVolume"
+    type          = "AzureBlob"
+    account_name  = "${azurerm_storage_account.prod.name}"
+    share_name    = "${azurerm_storage_container.prod.name}"
+    access_key    = "${azurerm_storage_account.prod.primary_access_key}"
+    mount_path    = "/var/lib/ghost/content_blob"
+  }
+
+  storage_account {
+    name          = "ContentFilesVolume"
+    type          = "AzureFiles"
+    account_name  = "${azurerm_storage_account.prod.name}"
+    share_name    = "${azurerm_storage_share.prod.name}"
+    access_key    = "${azurerm_storage_account.prod.primary_access_key}"
+    mount_path    = "/var/lib/ghost/content_files"
+  } 
 }
 
 resource "azurerm_app_service_slot" "dev" {
@@ -54,19 +84,26 @@ resource "azurerm_app_service_slot" "dev" {
 
   site_config {
     always_on          = true
-    linux_fx_version   = "DOCKER|ghost:latest"  
   }
 
   app_settings = {
-    database__connection__database      = "ghost-dev"
+    #Settings for ghost
+    database__client                    = "mysql"
     database__connection__host          = "${azurerm_mysql_server.staging.name}.mysql.database.azure.com"
+    database__connection__port          = "3306"
     database__connection__user          = "${var.mysql_administrator_login}@${azurerm_mysql_server.staging.name}"
     database__connection__password      = "${var.mysql_administrator_login_password}"
+    database__connection__database      = "ghost-dev"
+    database__connection__ssl           = "true"
     WEBSITES_PORT                       = "2368"
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "true"
     NODE_ENV                            = "production"
     url                                 = "https://${var.env_prefix}-dev.azurewebsites.net"
-  }
+    #Settings for private Container Registries
+    DOCKER_REGISTRY_SERVER_URL      = "https://${azurerm_container_registry.acr_active.login_server}"
+    DOCKER_REGISTRY_SERVER_USERNAME = "${azurerm_container_registry.acr_active.admin_username}"
+    DOCKER_REGISTRY_SERVER_PASSWORD = "${azurerm_container_registry.acr_active.admin_password}"
+  } 
 }
 
 resource "azurerm_app_service" "prod_standby" {
@@ -77,7 +114,6 @@ resource "azurerm_app_service" "prod_standby" {
 
   site_config {
     always_on          = true
-    linux_fx_version   = "DOCKER|ghost:latest"
     ip_restriction     = [
       {
         service_tag               = "AzureFrontDoor.Backend",
@@ -103,6 +139,8 @@ resource "azurerm_app_service" "prod_standby" {
   }
 
   app_settings = {
+    #Settings for ghost
+    database__client                    = "mysql"
     database__connection__host          = "${azurerm_mysql_server.prod.name}.mysql.database.azure.com"
     database__connection__port          = "3306"
     database__connection__user          = "${var.mysql_administrator_login}@${azurerm_mysql_server.prod.name}"
@@ -113,7 +151,36 @@ resource "azurerm_app_service" "prod_standby" {
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "true"
     NODE_ENV                            = "production"
     url                                 = "https://ghost-FrontDoor.azurefd.net"
+    GHOST_CONTENT                       = "/var/lib/ghost/content_files/"
+    paths__contentPath	                = "/var/lib/ghost/content_files/"
+    privacy__useUpdateCheck	            = "false"    
+    #Settings for private Container Registries
+    DOCKER_REGISTRY_SERVER_URL      = "https://${azurerm_container_registry.acr_standby.login_server}"
+    DOCKER_REGISTRY_SERVER_USERNAME = "${azurerm_container_registry.acr_standby.admin_username}"
+    DOCKER_REGISTRY_SERVER_PASSWORD = "${azurerm_container_registry.acr_standby.admin_password}"
+    #Settings for application insights
+    APPINSIGHTS_INSTRUMENTATIONKEY              = "${azurerm_application_insights.ai_appservice_standby.instrumentation_key}"
+    APPLICATIONINSIGHTS_CONNECTION_STRING       = "${azurerm_application_insights.ai_appservice_standby.connection_string}"
+    ApplicationInsightsAgent_EXTENSION_VERSION  = "~2"
   }
+
+  storage_account {
+    name          = "ContentBlobVolume"
+    type          = "AzureBlob"
+    account_name  = "${azurerm_storage_account.prod.name}"
+    share_name    = "${azurerm_storage_container.prod.name}"
+    access_key    = "${azurerm_storage_account.prod.primary_access_key}"
+    mount_path    = "/var/lib/ghost/content_blob"
+  }
+
+  storage_account {
+    name          = "ContentFilesVolume"
+    type          = "AzureFiles"
+    account_name  = "${azurerm_storage_account.prod.name}"
+    share_name    = "${azurerm_storage_share.prod.name}"
+    access_key    = "${azurerm_storage_account.prod.primary_access_key}"
+    mount_path    = "/var/lib/ghost/content_files"
+  } 
 }
 
 resource "azurerm_app_service_slot" "dev_standby" {
@@ -125,17 +192,24 @@ resource "azurerm_app_service_slot" "dev_standby" {
 
   site_config {
     always_on          = true
-    linux_fx_version   = "DOCKER|ghost:latest"  
   }
 
   app_settings = {
-    database__connection__database      = "ghost-dev"
+    #Settings for ghost
+    database__client                    = "mysql"
     database__connection__host          = "${azurerm_mysql_server.staging.name}.mysql.database.azure.com"
+    database__connection__port          = "3306"
     database__connection__user          = "${var.mysql_administrator_login}@${azurerm_mysql_server.staging.name}"
     database__connection__password      = "${var.mysql_administrator_login_password}"
+    database__connection__database      = "ghost-dev"
+    database__connection__ssl           = "true"
     WEBSITES_PORT                       = "2368"
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "true"
     NODE_ENV                            = "production"
     url                                 = "https://${var.env_prefix}-standby-dev.azurewebsites.net"
+    #Settings for private Container Registries
+    DOCKER_REGISTRY_SERVER_URL      = "https://${azurerm_container_registry.acr_standby.login_server}"
+    DOCKER_REGISTRY_SERVER_USERNAME = "${azurerm_container_registry.acr_standby.admin_username}"
+    DOCKER_REGISTRY_SERVER_PASSWORD = "${azurerm_container_registry.acr_standby.admin_password}"
   }
 }
