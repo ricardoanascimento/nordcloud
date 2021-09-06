@@ -50,7 +50,7 @@ We have created the pipelines as simple as possible just to run the PoC.
 ### Pipelines
 - container-deploy-active-rg.yml ---> Within the active resource group, build our custom docker image, push the image to a private Azure Container Registry and Deploy to our Dev App Service Slot.
 - container-deploy-standby-rg.yml ---> Within the standby resource group, build our custom docker image, push the image to a private Azure Container Registry and Deploy to our Dev App Service Slot.
-- function-deploy-active-rg.yml --> ---> Within the active resource group, build our custom node function to delete all posts using the Ghost Admin API package and Deploy to our Production Azure Function.
+- function-deploy-active-rg.yml ---> Within the active resource group, build our custom node function to delete all posts using the Ghost Admin API package and Deploy to our Production Azure Function.
 - swap-dev-prod.yml --> Swaps Production and Dev Slots
 
 ### Expected flow
